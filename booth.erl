@@ -15,7 +15,8 @@ loop(Not_yet_voted, Unbatched_ballots, Batched_ballots, Voting_schemes) ->
             Valid_registration = sets:is_element(Credentials, Not_yet_voted),
             if
                 Valid_registration ->
-                    New_not_yet_voted = sets:remove(Credentials, Not_yet_voted),
+                    io:format("hi~n"),
+                    New_not_yet_voted = sets:del_element(Credentials, Not_yet_voted),
                     New_unbatched_ballots = [Data | Unbatched_ballots],
                     loop(New_not_yet_voted, New_unbatched_ballots, Batched_ballots, Voting_schemes);
                 true ->
