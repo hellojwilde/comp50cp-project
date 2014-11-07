@@ -10,6 +10,10 @@ loop(Not_yet_voted, Unbatched_ballots, Batched_ballots, Voting_schemes) ->
         {registration, Credentials} ->
             New_not_yet_voted = sets:add_element(Credentials, Not_yet_voted),
             loop(New_not_yet_voted, Unbatched_ballots, Batched_ballots, Voting_schemes);
+        {registration_many, Set_of_credentials} ->
+            New_not_yet_voted = sets:union(Set_of_credentials, Not_yet_voted),
+            io:format("hi~n"),
+            loop(New_not_yet_voted, Unbatched_ballots, Batched_ballots, Voting_schemes);
         % cast a vote
         {ballot, Credentials, Data} ->
             Valid_registration = sets:is_element(Credentials, Not_yet_voted),
