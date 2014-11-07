@@ -1,5 +1,5 @@
 -module(tally).
--export([init/2]).
+-export([init/2, debug_update/1]).
 
 % First argument is a module exporting empty/0, combine/2, and winner/1
 % Second argument is a function to call on each updated winner
@@ -17,3 +17,5 @@ loop(Scheme, Update, Result) ->
 			loop(Scheme, Update, Result);
 		stop -> ok
 	end.
+
+debug_update(X) -> io:format("~w~n", [X]).
