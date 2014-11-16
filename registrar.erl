@@ -9,6 +9,8 @@ init() -> spawn(fun() -> loop(block, [], [], now(), []) end).
 
 init(Node) -> spawn(Node, fun() -> loop(block, [], [], now(), []) end).
 
+% start registrar_c.erl
+
 stop(Registrar) ->
     Registrar ! stop,
     ok.
@@ -59,6 +61,8 @@ replace(Registrar, Old, New) ->
     Registrar ! {replace, Old, New},
     ok.
 
+% start registrar_vc.erl
+
 register(Registrar, Credentials) -> register(Registrar, Credentials, infinity).
 
 register(Registrar, Credentials, Timeout) ->
@@ -70,6 +74,8 @@ register(Registrar, Credentials, Timeout) ->
         Timeout -> {error, "Timed out waiting for registration response."}
     end.
 
+% end registrar_vc.erl
+% end registrar_c.erl
 % other functions
 
 flush() ->
