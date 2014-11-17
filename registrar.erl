@@ -4,9 +4,9 @@
 
 % exported functions
 
-init() -> spawn(fun() -> loop([], [], now()) end).
+init() -> spawn(fun() -> loop() end).
 
-init(Node) -> spawn(Node, fun() -> loop([], [], now()) end).
+init(Node) -> spawn(Node, fun() -> loop() end).
 
 % start registrar_c.erl
 
@@ -54,79 +54,123 @@ flush() ->
         0 -> ok
     end.
 
-get_voting_credentials(_Reg_cred) -> _Reg_cred.
+get_voting_credentials(Args) ->
+    {Vote_creds, State} = Args,
+    Pass = random_pass(16, [], State),
+    case lists:member(Pass, Vote_creds) of
+        true -> get_voting_credentials({Vote_creds, now()});
+        false -> Pass
+    end.
+
+random_pass(0, _Pass, _) -> _Pass;
+random_pass(N, Pass, State) ->
+    {C, New_state} = random_alpha_num(State),
+    random_pass(N - 1, [C | Pass], New_state).
+
+random_alpha_num(State) ->
+    {N, New_state} = random:uniform_s(62, State),
+    C = if
+        N < 11 -> N + 47;
+        N < 37 -> N + 54;
+        true -> N + 60
+    end,
+    {C, New_state}.
 
 % 0 registered booths
 
-loop([], Registered, _Gen_state) ->
+loop() ->
     receive
         stop -> flush();
         {state, From} ->
-            From ! {state, {[], Registered, _Gen_state}},
-            loop([], Registered, _Gen_state);
-        {register_booth, Booth} -> loop([Booth], Registered, _Gen_state);
+            From ! {state, {[], [], [], [], no_gen}},
+            loop();
+        {register_booth, Booth} -> loop([Booth], [], [], []);
         {register, From, _} ->
             From ! {failure, no_booths},
-            loop([], Registered, _Gen_state)
-    end;
+            loop();
+        {ok, _, _} -> loop()
+    end.
 
 % 1 registered booth
 
-loop([Booth1], Registered, _Gen_state) ->
+loop([Booth1], Reg_creds, Vote_creds, Registered) ->
     receive
         stop -> flush();
         {state, From} ->
-            From ! {state, {[Booth1], Registered, _Gen_state}},
-            loop([Booth1], Registered, _Gen_state);
-        {register_booth, Booth1} -> loop([Booth1], Registered, _Gen_state);
+            From ! {state,
+                    {[Booth1], Reg_creds, Vote_creds, Registered, no_gen}},
+            loop([Booth1], Reg_creds, Vote_creds, Registered);
+        {register_booth, Booth1} ->
+            loop([Booth1], Reg_creds, Vote_creds, Registered);
         {register_booth, Booth} ->
-            loop([Booth, Booth1], Registered, _Gen_state);
+            loop([Booth, Booth1], Reg_creds, Vote_creds, Registered, now());
         {register, From, Reg_cred} ->
-            case lists:keymember(Reg_cred, 1, Registered) of
+            case lists:member(Reg_cred, Reg_creds) of
                 true ->
                     From ! {failure, registered},
-                    loop([Booth1], Registered, _Gen_state);
+                    loop([Booth1], Reg_creds, Vote_creds, Registered);
                 false ->
-                    Vote_cred = get_voting_credentials(Reg_cred),
+                    Vote_cred = get_voting_credentials({Vote_creds, now()}),
                     Booth1 ! {registration, Vote_cred},
-                    receive
-                        {ok, Vote_cred, Booth1} ->
-                            From ! {success, {Vote_cred, Booth1}}
-                    end,
-                    loop([Booth1], [{Reg_cred, Vote_cred, Booth1} | Registered],
-                         _Gen_state)
-            end
-    end;
+                    loop([Booth1], [Reg_cred | Reg_creds],
+                         [Vote_cred | Vote_creds],
+                         [{From, Vote_cred, Booth1} | Registered])
+            end;
+        {ok, Vote_cred, Booth1} ->
+            case lists:keyfind(Vote_cred, 2, Registered) of
+                false ->
+                    loop([Booth1], Reg_creds, Vote_creds, Registered);
+                {From, _, _} ->
+                    From ! {success, {Vote_cred, Booth1}},
+                    loop([Booth1], Reg_creds, Vote_creds,
+                         lists:delete({From, Vote_cred, Booth1}, Registered))
+            end;
+        {ok, _, _} ->
+            loop([Booth1], Reg_creds, Vote_creds, Registered)
+    end.
 
 % multiple registered booths
 
-loop(Booths, Registered, Gen_state) ->
+loop(Booths, Reg_creds, Vote_creds, Registered, Gen_state) ->
     receive
         stop -> flush();
         {state, From} ->
-            From ! {state, {Booths, Registered, Gen_state}},
-            loop(Booths, Registered, Gen_state);
+            From ! {state,
+                    {Booths, Reg_creds, Vote_creds, Registered, Gen_state}},
+            loop(Booths, Reg_creds, Vote_creds, Registered, Gen_state);
         {register_booth, Booth} ->
             case lists:member(Booth, Booths) of
-                true -> loop(Booths, Registered, Gen_state);
-                false -> loop([Booth | Booths], Registered, Gen_state)
+                true ->
+                    loop(Booths, Reg_creds, Vote_creds, Registered, Gen_state);
+                false ->
+                    loop([Booth | Booths], Reg_creds, Vote_creds, Registered,
+                         Gen_state)
             end;
         {register, From, Reg_cred} ->
-            case lists:keymember(Reg_cred, 1, Registered) of
+            case lists:member(Reg_cred, Reg_creds) of
                 true ->
                     From ! {failure, registered},
-                    loop(Booths, Registered, Gen_state);
+                    loop(Booths, Reg_creds, Vote_creds, Registered, Gen_state);
                 false ->
-                    Vote_cred = get_voting_credentials(Reg_cred),
+                    Vote_cred = get_voting_credentials({Vote_creds, now()}),
                     {N, New_gen_state} =
                         random:uniform_s(length(Booths), Gen_state),
                     Booth = lists:nth(N, Booths),
                     Booth ! {registration, Vote_cred},
-                    receive
-                        {ok, Vote_cred, Booth} ->
-                            From ! {success, {Vote_cred, Booth}}
-                    end,
-                    loop(Booths, [{Reg_cred, Vote_cred, Booth} | Registered],
-                         New_gen_state)
-            end
+                    loop(Booths, [Reg_cred | Reg_creds],
+                         [Vote_cred, Vote_creds],
+                         [{From, Vote_cred, Booth} | Registered], New_gen_state)
+            end;
+        {ok, Vote_cred, Booth} ->
+            case lists:keyfind(Vote_cred, 2, Registered) of
+                false ->
+                    loop(Booths, Reg_creds, Vote_creds, Registered, Gen_state);
+                {From, _, Booth} ->
+                    From ! {success, {Vote_cred, Booth}},
+                    loop(Booths, Reg_creds, Vote_creds,
+                         lists:delete({From, Vote_cred, Booth}, Registered),
+                         Gen_state);
+                {_, _, _} ->
+                    loop(Booths, Reg_creds, Vote_creds, Registered, Gen_state)
+            end;
     end.
