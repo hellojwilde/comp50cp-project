@@ -158,7 +158,7 @@ loop(Booths, Reg_creds, Vote_creds, Registered, Gen_state) ->
                     Booth = lists:nth(N, Booths),
                     Booth ! {registration, Vote_cred},
                     loop(Booths, [Reg_cred | Reg_creds],
-                         [Vote_cred, Vote_creds],
+                         [Vote_cred | Vote_creds],
                          [{From, Vote_cred, Booth} | Registered], New_gen_state)
             end;
         {ok, Vote_cred, Booth} ->
@@ -172,5 +172,5 @@ loop(Booths, Reg_creds, Vote_creds, Registered, Gen_state) ->
                          Gen_state);
                 {_, _, _} ->
                     loop(Booths, Reg_creds, Vote_creds, Registered, Gen_state)
-            end;
+            end
     end.
