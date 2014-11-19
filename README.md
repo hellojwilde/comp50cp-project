@@ -11,3 +11,9 @@ You can then use rebar to install the Erlang dependencies:
 
     $ rebar get-deps
     $ rebar compile
+
+## Running from the Interpreter
+
+In order to point `erl` at all of the deps we installed via Rebar, we have to run it with:
+
+    erl -pa ebin deps/*/ebin
