@@ -111,7 +111,7 @@ loop([Booth1], Reg_creds, Vote_creds, Registered) ->
                     loop([Booth1], Reg_creds, Vote_creds, Registered);
                 false ->
                     Vote_cred = get_voting_credentials({Vote_creds, now()}),
-                    Booth1 ! {registration, Vote_cred},
+                    Booth1 ! {registration, self(), Vote_cred},
                     loop([Booth1], [Reg_cred | Reg_creds],
                          [Vote_cred | Vote_creds],
                          [{From, Vote_cred, Booth1} | Registered])
@@ -156,7 +156,7 @@ loop(Booths, Reg_creds, Vote_creds, Registered, Gen_state) ->
                     {N, New_gen_state} =
                         random:uniform_s(length(Booths), Gen_state),
                     Booth = lists:nth(N, Booths),
-                    Booth ! {registration, Vote_cred},
+                    Booth ! {registration, self(), Vote_cred},
                     loop(Booths, [Reg_cred | Reg_creds],
                          [Vote_cred | Vote_creds],
                          [{From, Vote_cred, Booth} | Registered], New_gen_state)
