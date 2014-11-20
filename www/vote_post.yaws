@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Vote Confirmation</title>
+</head>
+<body>
+  <h1>Vote Confirmation</h1>
+  <erl>
+    get_normalized_ballot(PostValues) ->
+      % Get a set of the approval values that hae been submitted.
+      Approvals = sets:from_list(lists:filtermap(
+        fun ({Key, Value}) ->
+          case string:equal(Key, "approvals") of
+            true -> {true, list_to_atom(Value)};
+            false -> false
+          end
+        end,
+        PostValues
+      )),
+
+      % Find the list of candidates as atoms, sorted by rank.
+      Ranks = lists:filtermap(
+        fun ({Key, Value}) -> 
+          case string:str(Key, "rank_") of
+            1 -> {true, {
+              list_to_atom(string:sub_string(Key, 6)), 
+              list_to_integer(Value)
+            }};
+            _ -> false
+          end
+        end,
+        PostValues
+      ),
+
+      RanksSorted = lists:sort(
+        fun({_, Rank1}, {_, Rank2}) -> Rank1 =< Rank2 end,
+        Ranks
+      ),
+      NamesSorted = lists:map(fun({Name, _}) -> Name end, RanksSorted),
+
+      % Our ballot format requires that you only approve of your top votes.
+      % In the following fold, we're checking that we only have a transition 
+      % from approved to non-approved, not the other way around.
+      {_, IsApprovalOrderValid} = lists:foldl(
+        fun(Name, {IsCurApproved, IsValid}) -> 
+          IsApproved = sets:is_element(Name, Approvals),
+          {
+            IsCurApproved and IsApproved, 
+            IsValid and not (not IsCurApproved and IsApproved)
+          }
+        end,
+        {true, true},
+        NamesSorted
+      ),
+
+      % It's also possible that the set of people you approved and the set of
+      % people that you ranked aren't the same. The approvals must be a subset
+      % of the full set of ranked names.
+      IsApprovalSetValid = sets:is_subset(
+        Approvals, 
+        sets:from_list(NamesSorted)
+      ),
+
+      case IsApprovalOrderValid and IsApprovalSetValid of
+        true -> {ok, {NamesSorted, sets:size(Approvals)}};
+        false -> invalid
+      end.
+
+    send_ballot(BoothPid, Credential, Ballot) ->
+      BoothPid ! {ballot, Credential, Ballot},
+      {ehtml, {h2, [], ["Your ballot might've gotten submitted!"]}}.
+
+    out(A) ->
+      PostValues = yaws_api:parse_post(A),
+      Booth = postvar(A, "booth"),
+      Cred = postvar(A, "credential"),
+      Ballot = get_normalized_ballot(PostValues),
+
+      case {Booth, Cred, Ballot} of
+        {{ok, BoothValue}, {ok, CredValue}, {ok, BallotValue}} ->
+          send_ballot(list_to_pid(BoothValue), CredValue, BallotValue);
+        _ ->
+          {ehtml, {h2, [], ["Invalid booth ID, credential, or ballot format."]}}
+      end.
+  </erl>
+</body>
+</html>

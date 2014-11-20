@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Vote</title>
+</head>
+<body>
+  <h1>Vote</h1>
+
+  <form method="post" action="/vote_post.yaws">
+    <p>
+      <label for="booth">Booth (PID):</label>
+      <input type="text" name="booth"/>
+    </p>
+
+    <p>
+      <label for="credential">Credential:</label>
+      <input type="text" name="credential"/>
+    </p>
+
+    <table>
+      <tr>
+        <td>Candidate</td>
+        <td>Approve</td>
+        <td>Rank</td>
+      </tr>
+      <tr>
+        <td>Anschel</td>
+        <td><input type="checkbox" name="approvals" value="anschel"/></td>
+        <td><input type="number" name="rank_anschel"/></td>
+      </tr>
+      <tr>
+        <td>Josh</td>
+        <td><input type="checkbox" name="approvals" value="josh"/></td>
+        <td><input type="number" name="rank_josh"/></td>
+      </tr>
+      <tr>
+        <td>Andrew</td>
+        <td><input type="checkbox" name="approvals" value="andrew"/></td>
+        <td><input type="number" name="rank_andrew"/></td>
+      </tr>
+      <tr>
+        <td>Jonathan</td>
+        <td><input type="checkbox" name="approvals" value="jonathan"/></td>
+        <td><input type="number" name="rank_jonathan"/></td>
+      </tr>
+    </table>
+
+    <p>
+      <input type="submit" value="Vote!"/>
+    </p>
+  </form>
+</body>
+</html>
