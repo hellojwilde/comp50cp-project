@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Registration Result</title>
+</head>
+<body>
+  <h1>Registration Result</h1>
+  <erl>
+  send_registration(RegistrarPid, Credential) ->
+    RegistrarPid ! {register, self(), Credential},
+    receive
+      {failure, registered, From} ->
+        {ehtml, {h2, [], ["Registrar failed to register you."]}};
+      {success, registered, From, BoothPid} ->
+        {ehtml, {h2, [], ["Success: go register at booth: ", BoothPid]}}
+    after
+      2000 ->
+        {ehtml, {h2, [], ["Timeout waiting for registrar."]}}
+    end.
+
+  out(A) ->
+    case {postvar(A, "registrar"), postvar(A, "credential")} of
+      {{ok, RegistrarVal}, {ok, CredentialVal}} -> 
+        send_registration(list_to_pid(RegistrarVal), CredentialVal);
+      _ ->
+        {ehtml, {h2, [], ["Invalid registrar and/or credential."]}}
+    end.
+  </erl>
+</body>
+</html>

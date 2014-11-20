@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Register</title>
+</head>
+<body>
+  <h1>Register</h1>
+  <form method="post" action="/register_post.yaws">
+    <p>
+      <label for="registrar">Registrar (PID):</label>
+      <input type="text" name="registrar"/>
+    </p>
+    <p>
+      <label for="credential">Credential:</label>
+      <input type="text" name="credential"/>
+    </p>
+    <p>
+      <input type="submit" name="Register" />
+    </p>
+  </form>
+</body>
+</html>
