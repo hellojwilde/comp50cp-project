@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Index</title>
+</head>
+<body>
+  <h1>Index</h1>
+  <ul>
+    <li><a href="/register.yaws">Register</a></li>
+    <li><a href="/vote.yaws">Vote</a></li>
+    <li><a href="/results.yaws">Results</a></li>
+  </ul>
+</body>
+</html>
