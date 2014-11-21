@@ -1,0 +1,12 @@
+{application, vote,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { vote_app, []}},
+  {env, []}
+ ]}.
