@@ -15,7 +15,8 @@ init_server() ->
     {docroot, DocRoot},
     {listen, {0,0,0,0}},
     {port, 8888},
-    {servername, "vote"}
+    {servername, "vote"},
+    {appmods, [{"/result_events", result_events}]}
   ],
   GlobalConfList = [
     {id, Id}
