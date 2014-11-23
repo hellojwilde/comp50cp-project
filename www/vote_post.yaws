@@ -11,7 +11,7 @@
       Approvals = sets:from_list(lists:filtermap(
         fun ({Key, Value}) ->
           case string:equal(Key, "approvals") of
-            true -> {true, list_to_atom(Value)};
+            true -> {true, Value};
             false -> false
           end
         end,
@@ -23,7 +23,7 @@
         fun ({Key, Value}) -> 
           case string:str(Key, "rank_") of
             1 -> {true, {
-              list_to_atom(string:sub_string(Key, 6)), 
+              string:sub_string(Key, 6), 
               list_to_integer(Value)
             }};
             _ -> false
