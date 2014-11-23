@@ -9,5 +9,5 @@ rel/example_project
 .concrete/DEV_MODE
 .rebar
 .DS_Store
-vote*
+vote:8888*
 report.log
