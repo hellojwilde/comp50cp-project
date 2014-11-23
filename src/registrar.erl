@@ -42,17 +42,14 @@ register(Registrar, Credentials, Timeout) ->
     end.
 
 % end registrar_vc.erl
-
-% start regitrar_bc.erl
+% start registrar_bc.erl
 
 registered(Registrar, Credentials) ->
     Registrar ! {registered, Credentials, self()},
     ok.
 
 % end registrar_bc.erl
-
 % end registrar_c.erl
-
 % other functions
 
 get_voting_credentials(Args) ->
@@ -89,7 +86,8 @@ loop() ->
         {register, From, _} ->
             From ! {failure, no_booths, self()},
             loop();
-        {registered, _, _} -> loop()
+        {registered, _, _} -> loop();
+        _ -> loop()
     end.
 
 % 1 registered booth
@@ -127,7 +125,8 @@ loop([Booth1], Reg_creds, Vote_creds, Registered) ->
                          lists:delete({From, Vote_cred, Booth1}, Registered))
             end;
         {registered, _, _} ->
-            loop([Booth1], Reg_creds, Vote_creds, Registered)
+            loop([Booth1], Reg_creds, Vote_creds, Registered);
+        _ -> loop([Booth1], Reg_creds, Vote_creds, Registered)
     end.
 
 % multiple registered booths
@@ -174,5 +173,6 @@ loop(Booths, Reg_creds, Vote_creds, Registered, Gen_state) ->
                          Gen_state);
                 {_, _, _} ->
                     loop(Booths, Reg_creds, Vote_creds, Registered, Gen_state)
-            end
+            end;
+        _ -> loop(Booths, Reg_creds, Vote_creds, Registered, Gen_state)
     end.
