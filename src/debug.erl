@@ -16,8 +16,10 @@ booth() -> spawn(fun() -> booth_loop(booth:init(), 0) end).
 booth_loop(Booth, N) ->
 	receive
 		{vote, _Candidates, _Approved} = Ballot ->
-			Booth ! {registration, N},
+			Booth ! {registration, self(), N},
 			Booth ! {ballot, N, Ballot};
+		{registered, _, _} ->
+			ok;
 		Anything ->
 			Booth ! Anything
 	end,
@@ -27,3 +29,10 @@ multi_message(_Pid, _Message, 0) -> ok;
 multi_message(Pid, Message, N) ->
 	Pid ! Message,
 	multi_message(Pid, Message, N-1).
+
+all_votes() -> {
+	fun(X) -> X end,
+	fun() -> [] end,
+	fun lists:append/2,
+	fun(X) -> X end
+}.
