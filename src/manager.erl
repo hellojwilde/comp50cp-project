@@ -16,7 +16,7 @@ init() ->
             fun(_) -> booth:init() end, 
             lists:seq(1, 10)),
     link_to_pid_list(Booths),
-    Talliers = [],  % @ANSCHEL
+    Talliers = [],  % @ANSCHEL, this needs to be a pid list
     link_to_pid_list(Talliers),
     Serverdata = [], % @JONATHAN
     lists:map(fun(Booth) -> registrar:register_booth(Registrar, Booth) end, Booths),
@@ -24,9 +24,10 @@ init() ->
         fun({Booth, Tallier}) -> Tallier ! {announce, Booth} end,
         [{X, Y} || X <- Booths, Y <- Talliers]),
     spawn(fun() -> loop(Registrar, Booths, Talliers, Serverdata) end).
+    % @JONATHAN, connecting server to registar
+    % @JONATHAN, connecting server to talliers
 
 loop(Registrar, Booths, Talliers, Serverdata) ->
-    io:format("hi~n"),
     receive
         {newBooth, Booth} ->
             registrar:register_booth(Registrar, Booth),
