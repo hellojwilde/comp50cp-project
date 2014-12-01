@@ -11,15 +11,25 @@
 % Getting/making a list of talliers
 
 init() ->
+    % registrar
     Registrar = registrar:init(),
     link(Registrar),
+    % booths
     Booths = lists:map(
             fun(_) -> booth:init() end, 
             lists:seq(1, 10)),
     link_to_pid_list(Booths),
-    Talliers = create_talliers(),
-    link_to_pid_list(Talliers),
+    % talliers
     WinnerCollector = winner_collector:init(),
+    Talliers = lists:map(
+            fun({Scheme_atom, Scheme}) -> 
+                Update = winner_collector:get_winner_collection_fn(Scheme_atom, WinnerCollector),
+                tally:init(Scheme, Update)
+            end,
+            schemes()
+    ),
+    link_to_pid_list(Talliers),
+    % frontend
     FrontendData = #frontend_pids{registrar_pid = Registrar, tally_collector_pid = WinnerCollector},
     frontend_sup:start_link(FrontendData),
     lists:map(fun(Booth) -> registrar:register_booth(Registrar, Booth) end, Booths),
@@ -48,11 +58,11 @@ loop(Registrar, Booths, Talliers) ->
 link_to_pid_list(Xs) ->
     lists:map(fun(X) -> link(X) end, Xs).
 
-create_talliers() ->
+schemes() ->
     [
-        tally:init(point_scheme:plurality(), fun debug:update/1),
-        tally:init(point_scheme:approval(), fun debug:update/1),
-        tally:init(point_scheme:borda_count(), fun debug:update/1),
-        tally:init(point_scheme:nauru(), fun debug:update/1),
-        tally:init(schultze, fun debug:update/1)
+        {plurality, point_scheme:plurality()}, 
+        {approval, point_scheme:approval()}, 
+        {borda_count, point_scheme:borda_count()}, 
+        {nauru, point_scheme:nauru()}, 
+        {schultze, schultze}
     ].
