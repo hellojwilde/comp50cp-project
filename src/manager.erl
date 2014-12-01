@@ -16,7 +16,7 @@ init() ->
             fun(_) -> booth:init() end, 
             lists:seq(1, 10)),
     link_to_pid_list(Booths),
-    Talliers = [],  % @ANSCHEL, this needs to be a pid list
+    Talliers = create_talliers(),
     link_to_pid_list(Talliers),
     WinnerCollector = winner_collector:init(),
     FrontendData = #frontend_pids{registrar_pid = Registrar, tally_collector_pid = WinnerCollector},
@@ -47,3 +47,12 @@ loop(Registrar, Booths, Talliers) ->
 
 link_to_pid_list(Xs) ->
     lists:map(fun(X) -> link(X) end, Xs).
+
+create_talliers() ->
+    [
+        tally:init(point_scheme:plurality(), ???),
+        tally:init(point_scheme:approval(), ???),
+        tally:init(point_scheme:borda_count(), ???),
+        tally:init(point_scheme:nauru(), ???),
+        tally:init(schultze, ???),
+    ].
