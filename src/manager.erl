@@ -18,16 +18,16 @@ init() ->
     link_to_pid_list(Booths),
     Talliers = [],  % @ANSCHEL, this needs to be a pid list
     link_to_pid_list(Talliers),
-    Serverdata = [], % @JONATHAN
+    WinnerCollector = winner_collector:init(),
+    FrontendData = #frontend_pids{registrar_pid = Registrar, tally_collector_pid = WinnerCollector},
+    frontend_sup:start_link(FrontendData),
     lists:map(fun(Booth) -> registrar:register_booth(Registrar, Booth) end, Booths),
     lists:map(
         fun({Booth, Tallier}) -> Tallier ! {announce, Booth} end,
         [{X, Y} || X <- Booths, Y <- Talliers]),
-    spawn(fun() -> loop(Registrar, Booths, Talliers, Serverdata) end).
-    % @JONATHAN, connecting server to registar
-    % @JONATHAN, connecting server to talliers
+    spawn(fun() -> loop(Registrar, Booths, Talliers) end).
 
-loop(Registrar, Booths, Talliers, Serverdata) ->
+loop(Registrar, Booths, Talliers) ->
     receive
         {newBooth, Booth} ->
             registrar:register_booth(Registrar, Booth),
