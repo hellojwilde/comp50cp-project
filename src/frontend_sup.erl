@@ -2,7 +2,7 @@
 
 -module(frontend_sup).
 -behaviour(supervisor).
--export([start_link/0, init/1]).
+-export([start_link/1, init/1]).
 
 start_link(_VoteConfig) ->
   supervisor:start_link({local, ?MODULE}, ?MODULE, []).
