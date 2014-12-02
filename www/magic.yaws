@@ -13,7 +13,7 @@
           RegistrarPid ! {register, self(), Name},
           receive
             {success, {Credential, BoothPid}, _RegistrarPid} ->
-              BoothPid ! {ballot, Credential, Ballot};
+              BoothPid ! {ballot, self(), Credential, Ballot};
             _ -> fail
           after
             200 -> timeout
@@ -27,15 +27,17 @@
       RegistrarPid = frontend_pids:get_registrar_pid(A),
 
       case postvar(A, "type") of
-        {ok, "simulate_josh"} ->
+        {ok, "simulate"} ->
           simulate_votes(RegistrarPid, [
             {"a", {vote, ["josh", "jonathan", "andrew", "anschel"], 1}},
             {"b", {vote, ["josh", "jonathan", "andrew", "anschel"], 2}},
-            {"c", {vote, ["josh", "jonathan", "andrew", "anschel"], 3}},
-            {"d", {vote, ["josh", "jonathan", "andrew", "anschel"], 1}},
-            {"e", {vote, ["josh", "jonathan", "anschel", "andrew"], 2}}
+            {"c", {vote, ["andrew", "jonathan", "josh", "anschel"], 3}},
+            {"d", {vote, ["anschel", "jonathan", "andrew", "josh"], 1}},
+            {"e", {vote, ["andrew", "jonathan", "anschel", "josh"], 2}},
+            {"f", {vote, ["anschel", "jonathan", "andrew", "josh"], 4}},
+            {"g", {vote, ["andrew", "jonathan", "anschel", "josh"], 2}}
           ]),
-          {ehtml, {h2, [], ["Dumped in a bunch of votes with josh ranked first."]}};
+          {ehtml, {h2, [], ["Dumped in a bunch of votes."]}};
         {ok, "flush"} -> 
           ManagerPid ! flush,
           {ehtml, {h2, [], ["All booths flushed of votes."]}};
@@ -45,12 +47,12 @@
 
   <form method="post" action="/magic.yaws">
     <input type="hidden" name="type" value="flush"/>
-    <input type="submit" value="Flush all votes"/>
+    <input type="submit" value="Flush all votes!"/>
   </form>
 
   <form method="post" action="/magic.yaws">
-    <input type="hidden" name="type" value="simulate_josh"/>
-    <input type="submit" value="Lots of votes with josh first"/>
+    <input type="hidden" name="type" value="simulate"/>
+    <input type="submit" value="Simulate some votes!"/>
   </form>
 </body>
 </html>
