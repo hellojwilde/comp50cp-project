@@ -3,10 +3,10 @@
 -module(frontend).
 -compile(export_all).
 
-start() ->
-  {ok, spawn(?MODULE, init_server, [])}.
+start(VoteConfig) ->
+  {ok, spawn(?MODULE, init_server, [VoteConfig])}.
 
-init_server() ->
+init_server(VoteConfig) ->
   % Generate our configuration (including child specs) to pass to frontend_sup, 
   % which supervises our embedded instance of YAWS.
   Id = "voting_frontend",
@@ -16,7 +16,8 @@ init_server() ->
     {listen, {0,0,0,0}},
     {port, 8888},
     {servername, "vote"},
-    {appmods, [{"/result_events", result_events}]}
+    {appmods, [{"/result_events", result_events}]},
+    {opaque, VoteConfig}
   ],
   GlobalConfList = [
     {id, Id}

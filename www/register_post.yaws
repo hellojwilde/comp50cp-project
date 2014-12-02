@@ -11,8 +11,11 @@
       receive
         {failure, registered, From} ->
           {ehtml, {h2, [], ["Registrar failed to register you."]}};
-        {success, {_Cred, Booth1}, _RegistrarPid} ->
-          {ehtml, {h2, [], ["Success: go register at booth: ", BoothPid]}}
+        {success, {_Cred, BoothPid}, _RegistrarPid} ->
+          {ehtml, {h2, [], [
+            "Success: go vote at booth: ", 
+            pid_to_list(BoothPid)
+          ]}}
       after
         2000 ->
           {ehtml, {h2, [], ["Timeout waiting for registrar."]}}

@@ -4,13 +4,13 @@
 -behaviour(supervisor).
 -export([start_link/1, init/1]).
 
-start_link(_VoteConfig) ->
-  supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+start_link(VoteConfig) ->
+  supervisor:start_link({local, ?MODULE}, ?MODULE, VoteConfig).
 
-init([]) ->
+init(VoteConfig) ->
   FrontendChildSpec = {
     frontend, 
-    {frontend, start, []},
+    {frontend, start, [VoteConfig]},
     permanent, 
     2000,
     worker,
