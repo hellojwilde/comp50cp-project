@@ -67,8 +67,18 @@
       end.
 
     send_ballot(BoothPid, Credential, Ballot) ->
-      BoothPid ! {ballot, Credential, Ballot},
-      {ehtml, {h2, [], ["Your ballot might've gotten submitted!"]}}.
+      BoothPid ! {ballot, self(), Credential, Ballot},
+      receive
+        success ->
+          {ehtml, {h2, [], ["Your vote was successfully submitted."]}};
+        {failure, invalid_registration} ->
+          {ehtml, {h2, [], ["You already voted. This vote was not saved."]}};
+        _ ->
+          {ehtml, {h2, [], ["There was an unknown error during voting."]}}
+      after
+        2000 ->
+          {ehtml, {h2, [], ["Timeout during voting."]}}
+      end.
 
     out(A) ->
       PostValues = yaws_api:parse_post(A),
