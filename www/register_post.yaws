@@ -9,8 +9,6 @@
     send_registration(RegistrarPid, Name) ->
       RegistrarPid ! {register, self(), Name},
       receive
-        {failure, registered, From} ->
-          {ehtml, {h2, [], ["Registrar failed to register you."]}};
         {success, {Cred, BoothPid}, _RegistrarPid} ->
           BoothPidList = pid_to_list(BoothPid),
           VoteHref =
@@ -21,10 +19,16 @@
             {a, [{href, VoteHref}], [
               BoothPidList, " with credential ", Cred]
             }
-          ]}}
+          ]}};
+        {failure, registered, _RegistrarPid} ->
+          {ehtml, {h2, [], ["You're already registered."]}};
+        {failure, no_booths, _RegistrarPid} ->
+          {ehtml, {h2, [], ["There aren't any voting booths set up yet."]}};
+        _ ->
+          {ehtml, {h2, [], ["There was an unknown registration error."]}}
       after
         2000 ->
-          {ehtml, {h2, [], ["Timeout waiting for registrar."]}}
+          {ehtml, {h2, [], ["Timeout during registration."]}}
       end.
 
     out(A) ->
