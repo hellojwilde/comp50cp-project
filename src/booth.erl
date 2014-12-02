@@ -14,21 +14,23 @@ loop(Not_yet_voted, Unbatched_ballots, Batched_ballots, Voting_schemes, BatchFre
             Pid ! {registered, Credentials, self()},
             loop(New_not_yet_voted, Unbatched_ballots, Batched_ballots, Voting_schemes, BatchFreq);
         % cast a vote
-        {ballot, Credentials, Data} ->
+        {ballot, Pid, Credentials, Data} ->
             Valid_registration = sets:is_element(Credentials, Not_yet_voted),
             if
                 Valid_registration ->
+                    Pid ! success,
                     New_not_yet_voted = sets:del_element(Credentials, Not_yet_voted),
                     New_unbatched_ballots = [Data | Unbatched_ballots],
                     if
                         length(New_unbatched_ballots) >= BatchFreq ->
-                            Fun = fun({Pid,Batchfun}) -> Pid ! {batch, Batchfun(New_unbatched_ballots)} end,
+                            Fun = fun({TallierPid,Batchfun}) -> TallierPid ! {batch, Batchfun(New_unbatched_ballots)} end,
                             lists:map(Fun, Voting_schemes),
                             loop(New_not_yet_voted, [], Batched_ballots ++ New_unbatched_ballots, Voting_schemes, BatchFreq);
                         true -> % not time to batch
                             loop(New_not_yet_voted, New_unbatched_ballots, Batched_ballots, Voting_schemes, BatchFreq)
                     end;
                 true -> % invalid registration
+                    Pid ! {failure, invalid_registration},
                     loop(Not_yet_voted, Unbatched_ballots, Batched_ballots, Voting_schemes, BatchFreq)
             end;
         % add a new ballot tallying system
