@@ -6,15 +6,17 @@
 <body>
   <h1>Registration Result</h1>
   <erl>
-    send_registration(RegistrarPid, Credential) ->
-      RegistrarPid ! {register, self(), Credential},
+    send_registration(RegistrarPid, Name) ->
+      RegistrarPid ! {register, self(), Name},
       receive
         {failure, registered, From} ->
           {ehtml, {h2, [], ["Registrar failed to register you."]}};
-        {success, {_Cred, BoothPid}, _RegistrarPid} ->
+        {success, {Credential, BoothPid}, _RegistrarPid} ->
           {ehtml, {h2, [], [
-            "Success: go vote at booth: ", 
-            pid_to_list(BoothPid)
+            "Success: go vote at booth ", 
+            pid_to_list(BoothPid),
+            " with credential ",
+            Credential
           ]}}
       after
         2000 ->
@@ -22,11 +24,11 @@
       end.
 
     out(A) ->
-      case {postvar(A, "registrar"), postvar(A, "credential")} of
-        {{ok, RegistrarVal}, {ok, CredentialVal}} -> 
-          send_registration(list_to_pid(RegistrarVal), CredentialVal);
+      case {postvar(A, "registrar"), postvar(A, "name")} of
+        {{ok, RegistrarVal}, {ok, NameVal}} -> 
+          send_registration(list_to_pid(RegistrarVal), NameVal);
         _ ->
-          {ehtml, {h2, [], ["Invalid registrar and/or credential."]}}
+          {ehtml, {h2, [], ["Invalid registrar and/or name."]}}
       end.
   </erl>
 </body>

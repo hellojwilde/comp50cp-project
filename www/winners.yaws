@@ -46,6 +46,8 @@
           '</tr>'
         ).appendTo(table);
       }
+
+      $('<p>Last updated: ' + new Date().toString() + '</p>').appendTo(this.el);
     };
 
     var winners = new Winners('#winners');

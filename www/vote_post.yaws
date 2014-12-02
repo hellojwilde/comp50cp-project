@@ -62,7 +62,7 @@
       ),
 
       case IsApprovalOrderValid and IsApprovalSetValid of
-        true -> {ok, {NamesSorted, sets:size(Approvals)}};
+        true -> {ok, {vote, NamesSorted, sets:size(Approvals)}};
         false -> invalid
       end.
 

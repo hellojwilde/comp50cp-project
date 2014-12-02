@@ -27,8 +27,8 @@
 </erl>
     </p>
     <p>
-      <label for="credential">Credential:</label>
-      <input type="text" name="credential"/>
+      <label for="name">Name:</label>
+      <input type="text" name="name"/>
     </p>
     <p>
       <input type="submit" name="Register" />
