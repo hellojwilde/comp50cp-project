@@ -16,10 +16,10 @@
 
     simulate_votes(RegistrarPid, Votes) ->
       lists:foreach(
-        fun ([Credential, Ballot]) ->
-          RegistrarPid ! {register, self(), Credential},
+        fun ({Name, Ballot}) ->
+          RegistrarPid ! {register, self(), Name},
           receive
-            {success, {_Cred, BoothPid}, _RegistrarPid} ->
+            {success, {Credential, BoothPid}, _RegistrarPid} ->
               BoothPid ! {ballot, Credential, Ballot};
             _ -> fail
           after
@@ -35,6 +35,15 @@
       RegistrarPid = FrontendPids#frontend_pids.registrar_pid,
 
       case postvar(A, "type") of
+        {ok, "simulate_josh"} ->
+          simulate_votes(RegistrarPid, [
+            {"a", {vote, ["josh", "jonathan", "andrew", "anschel"], 1}},
+            {"b", {vote, ["josh", "jonathan", "andrew", "anschel"], 2}},
+            {"c", {vote, ["josh", "jonathan", "andrew", "anschel"], 3}},
+            {"d", {vote, ["josh", "jonathan", "andrew", "anschel"], 1}},
+            {"e", {vote, ["josh", "jonathan", "anschel", "andrew"], 2}}
+          ]),
+          {ehtml, {h2, [], ["Dumped in a bunch of votes with josh ranked first."]}};
         {ok, "flush"} -> 
           ManagerPid ! flush,
           {ehtml, {h2, [], ["All booths flushed of votes."]}};
@@ -45,6 +54,11 @@
   <form method="post" action="/magic.yaws">
     <input type="hidden" name="type" value="flush"/>
     <input type="submit" value="Flush all votes"/>
+  </form>
+
+  <form method="post" action="/magic.yaws">
+    <input type="hidden" name="type" value="simulate_josh"/>
+    <input type="submit" value="Lots of votes with josh first"/>
   </form>
 </body>
 </html>
