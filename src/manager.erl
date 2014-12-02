@@ -37,7 +37,7 @@ init() ->
     % frontend
     FrontendData = #frontend_pids{
         registrar_pid = Registrar, 
-        tally_collector_pid = WinnerCollector,
+        winner_collector_pid = WinnerCollector,
         manager_pid = Manager
     },
     frontend_sup:start_link(FrontendData),

@@ -8,23 +8,15 @@
   <form method="post" action="/register_post.yaws">
     <p>
       <label for="registrar">Registrar (PID):</label>
-<erl>
-  % TODO: figure out how to get yaws to respect -include paths when JITting.
-  -record(frontend_pids, {
-    registrar_pid,
-    winner_collector_pid,
-    manager_pid
-  }).
-
-
-  out(A) ->
-    {ehtml,
-      {input, [
-        {type, "text"}, 
-        {name, "registrar"}, 
-        {value, pid_to_list(A#arg.opaque#frontend_pids.registrar_pid)}
-      ]}}.
-</erl>
+      <erl>
+        out(A) ->
+          {ehtml,
+            {input, [
+              {type, "text"}, 
+              {name, "registrar"}, 
+              {value, pid_to_list(frontend_pids:get_registrar_pid(A))}
+            ]}}.
+      </erl>
     </p>
     <p>
       <label for="name">Name:</label>

@@ -38,7 +38,7 @@ out(A) ->
 
 init([Arg]) ->
   process_flag(trap_exit, true),
-  WinnerCollector = Arg#arg.opaque#frontend_pids.tally_collector_pid,
+  WinnerCollector = Arg#arg.opaque#frontend_pids.winner_collector_pid,
   {ok, #state{sock=Arg#arg.clisock, winner_collector_pid=WinnerCollector}}.
 
 handle_call(_Request, _From, State) ->
@@ -84,7 +84,7 @@ handle_info(Msg, State) ->
         {error, Reason} -> {stop, Reason, State}
       end;
     {tcp_closed, _} -> {stop, normal, State#state{sock=closed}};
-    _ -> {noreply, State}
+    {_Info} -> {noreply, State}
   end.
 
 terminate(_Reason, #state{
