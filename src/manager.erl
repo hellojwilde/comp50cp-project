@@ -27,18 +27,22 @@ init() ->
     ),
     link_to_pid_list(Talliers),
 
-    % frontend
-    FrontendData = #frontend_pids{
-        registrar_pid = Registrar, 
-        tally_collector_pid = WinnerCollector
-    },
-    frontend_sup:start_link(FrontendData),
-
+    % tell booths and talliers about each other
     lists:map(fun(Booth) -> registrar:register_booth(Registrar, Booth) end, Booths),
     lists:map(
         fun({Booth, Tallier}) -> Tallier ! {announce, Booth} end,
         [{X, Y} || X <- Booths, Y <- Talliers]),
-    spawn(fun() -> loop(Registrar, Booths, Talliers, WinnerCollector) end).
+    Manager = spawn(fun() -> loop(Registrar, Booths, Talliers, WinnerCollector) end),
+
+    % frontend
+    FrontendData = #frontend_pids{
+        registrar_pid = Registrar, 
+        tally_collector_pid = WinnerCollector,
+        manager_pid = Manager
+    },
+    frontend_sup:start_link(FrontendData),
+
+    Manager.
 
 loop(Registrar, Booths, Talliers, WinnerCollector) ->
     receive

@@ -12,8 +12,10 @@
   % TODO: figure out how to get yaws to respect -include paths when JITting.
   -record(frontend_pids, {
     registrar_pid,
-    tally_collector_pid
+    tally_collector_pid,
+    manager_pid
   }).
+
 
   out(A) ->
     {ehtml,

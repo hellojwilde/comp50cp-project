@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Magic</title>
+</head>
+<body>
+  <h1>Magic</h1>
+
+  <erl>
+    % TODO: figure out how to get yaws to respect -include paths when JITting.
+    -record(frontend_pids, {
+      registrar_pid,
+      tally_collector_pid,
+      manager_pid
+    }).
+
+    simulate_votes(RegistrarPid, Votes) ->
+      lists:foreach(
+        fun ([Credential, Ballot]) ->
+          RegistrarPid ! {register, self(), Credential},
+          receive
+            {success, {_Cred, BoothPid}, _RegistrarPid} ->
+              BoothPid ! {ballot, Credential, Ballot};
+            _ -> fail
+          after
+            200 -> timeout
+          end
+        end,
+        Votes
+      ).
+      
+    out(A) ->
+      FrontendPids = A#arg.opaque,
+      ManagerPid = FrontendPids#frontend_pids.manager_pid,
+      RegistrarPid = FrontendPids#frontend_pids.registrar_pid,
+
+      case postvar(A, "type") of
+        {ok, "flush"} -> 
+          ManagerPid ! flush,
+          {ehtml, {h2, [], ["All booths flushed of votes."]}};
+        _ -> ok
+      end.
+  </erl>
+
+  <form method="post" action="/magic.yaws">
+    <input type="hidden" name="type" value="flush"/>
+    <input type="submit" value="Flush all votes"/>
+  </form>
+</body>
+</html>
