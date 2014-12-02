@@ -66,8 +66,8 @@ handle_info(Msg, State) ->
       ]}),
       case yaws_sse:send_events(Socket, yaws_sse:data(EventData)) of
         ok -> {noreply, State};
-        {error, closed} -> {stop, normal, state};
-        {error, Reason} -> {stop, Reason, state}
+        {error, closed} -> {stop, normal, State};
+        {error, Reason} -> {stop, Reason, State}
       end;
     {winners, Winners} ->
       #state{sock=Socket} = State,
@@ -80,11 +80,11 @@ handle_info(Msg, State) ->
       ]}),
       case yaws_sse:send_events(Socket, yaws_sse:data(EventData)) of
         ok -> {noreply, State};
-        {error, closed} -> {stop, normal, state};
-        {error, Reason} -> {stop, Reason, state}
+        {error, closed} -> {stop, normal, State};
+        {error, Reason} -> {stop, Reason, State}
       end;
     {tcp_closed, _} -> {stop, normal, State#state{sock=closed}};
-    {_Info} -> {noreply, State}
+    _ -> {noreply, State}
   end.
 
 terminate(_Reason, #state{
