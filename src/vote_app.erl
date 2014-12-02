@@ -10,7 +10,7 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    vote_sup:start_link().
+    manager:init().
 
 stop(_State) ->
     ok.

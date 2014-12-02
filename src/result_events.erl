@@ -6,6 +6,7 @@
 
 % From: http://comments.gmane.org/gmane.comp.web.server.yaws.general/3694
 -include_lib("yaws/include/yaws_api.hrl").
+-include("../include/vote.hrl").
 
 -export([out/1]).
 -export([
@@ -17,7 +18,7 @@
   code_change/3
 ]).
 
--record(state, {sock, yaws_pid}).
+-record(state, {sock, yaws_pid, winner_collector_pid}).
 
 out(A) ->
   case(A#arg.req)#http_request.method of
@@ -37,7 +38,8 @@ out(A) ->
 
 init([Arg]) ->
   process_flag(trap_exit, true),
-  {ok, #state{sock=Arg#arg.clisock}}.
+  WinnerCollector = Arg#arg.opaque#frontend_pids.tally_collector_pid,
+  {ok, #state{sock=Arg#arg.clisock, winner_collector_pid=WinnerCollector}}.
 
 handle_call(_Request, _From, State) ->
   {reply, ok, State}.
@@ -47,13 +49,31 @@ handle_cast(_Msg, State) ->
 
 handle_info(Msg, State) ->
   case Msg of
-    {ok, YawsPid} -> {noreply, State#state{yaws_pid=YawsPid}};
+    {ok, YawsPid} -> 
+      WinnerCollector = State#state.winner_collector_pid,
+      WinnerCollector ! {winners, self()},
+      WinnerCollector ! {subscribe, self()},
+      {noreply, State#state{yaws_pid=YawsPid}};
     {discard, _YawsPid} -> {stop, normal, State};
     {winner, VotingSchemeName, Winners} ->
       #state{sock=Socket} = State,
       EventData = json2:encode({struct, [
-        {name, VotingSchemeName},
-        {winners, {array, Winners}}
+        {"type", "winner"},
+        {"data", {struct, [
+          {"name", VotingSchemeName},
+          {"winners", {array, Winners}}
+        ]}}
+      ]}),
+      case yaws_sse:send_events(Socket, yaws_sse:data(EventData)) of
+        ok -> {noreply, State};
+        {error, closed} -> {stop, normal, state};
+        {error, Reason} -> {stop, Reason, state}
+      end;
+    {winners, Winners} ->
+      #state{sock=Socket} = State,
+      EventData = json2:encode({struct, [
+        {"type", "winners"},
+        {"data", {struct, maps:to_list(Winners)}}
       ]}),
       case yaws_sse:send_events(Socket, yaws_sse:data(EventData)) of
         ok -> {noreply, State};
@@ -64,7 +84,12 @@ handle_info(Msg, State) ->
     {_Info} -> {noreply, State}
   end.
 
-terminate(_Reason, #state{sock=Socket, yaws_pid=YawsPid}) ->
+terminate(_Reason, #state{
+    sock=Socket, 
+    yaws_pid=YawsPid, 
+    winner_collector_pid=WinnerCollector
+  }) ->
+  WinnerCollector ! {unsubscribe, self()},
   yaws_api:stream_process_end(Socket, YawsPid),
   ok.
 

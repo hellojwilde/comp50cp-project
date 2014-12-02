@@ -8,18 +8,21 @@ get_winner_collection_fn(VotingSchemeName, CollectorPID) ->
   fun (Winner) -> CollectorPID ! {winner, VotingSchemeName, Winner} end.
 
 loop() ->
-  loop(sets:new()).
+  loop(sets:new(), maps:new()).
 
-loop(Subscribers) ->
+loop(Subscribers, Winners) ->
   receive
-    {winner, VotingSchemeName, Winner} -> 
+    {winner, VotingSchemeName, Winner} ->
       lists:foreach(
         fun (Subscriber) -> Subscriber ! {winner, VotingSchemeName, Winner} end,
         sets:to_list(Subscribers)
       ),
-      loop(Subscribers);
+      loop(Subscribers, maps:put(VotingSchemeName, Winner, Winners));
+    {winners, RequestPID} ->
+      RequestPID ! {winners, Winners},
+      loop(Subscribers, Winners);
     {subscribe, Subcriber} ->
-      loop(sets:add_element(Subcriber, Subscribers));
+      loop(sets:add_element(Subcriber, Subscribers), Winners);
     {unsubscribe, Subcriber} ->
-      loop(sets:del_element(Subcriber, Subscribers))
+      loop(sets:del_element(Subcriber, Subscribers), Winners)
   end.

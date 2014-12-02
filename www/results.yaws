@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Results</title>
+</head>
+<body>
+  <h1>Results</h1>
+  <script>
+    var source = new EventSource('/result_events');
+    source.onmessage = function(e) {
+      alert(e);
+    };
+  </script>
+</body>
+</html>
