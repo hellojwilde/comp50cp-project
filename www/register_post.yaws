@@ -11,12 +11,16 @@
       receive
         {failure, registered, From} ->
           {ehtml, {h2, [], ["Registrar failed to register you."]}};
-        {success, {Credential, BoothPid}, _RegistrarPid} ->
+        {success, {Cred, BoothPid}, _RegistrarPid} ->
+          BoothPidList = pid_to_list(BoothPid),
+          VoteHref =
+            "/vote.yaws?booth=" ++ http_uri:encode(BoothPidList) ++ 
+            "&credential=" ++ http_uri:encode(Cred),
           {ehtml, {h2, [], [
             "Success: go vote at booth ", 
-            pid_to_list(BoothPid),
-            " with credential ",
-            Credential
+            {a, [{href, VoteHref}], [
+              BoothPidList, " with credential ", Cred]
+            }
           ]}}
       after
         2000 ->

@@ -9,12 +9,35 @@
   <form method="post" action="/vote_post.yaws">
     <p>
       <label for="booth">Booth (PID):</label>
-      <input type="text" name="booth"/>
+      <erl>
+        input_booth(BoothPid) -> 
+          {ehtml, 
+            {input, [{type, "text"}, {name, "booth"}, {value, BoothPid}]}}.
+
+        out(A) ->
+          Query = yaws_api:parse_query(A),
+          case lists:keyfind("booth", 1, Query) of
+            {"booth", BoothPid} -> input_booth(BoothPid);
+            _ -> input_booth("")
+          end.
+      </erl>
     </p>
 
     <p>
       <label for="credential">Credential:</label>
-      <input type="text" name="credential"/>
+
+      <erl>
+        input_credential(Cred) -> 
+          {ehtml, 
+            {input, [{type, "text"}, {name, "credential"}, {value, Cred}]}}.
+
+        out(A) ->
+          Query = yaws_api:parse_query(A),
+          case lists:keyfind("credential", 1, Query) of
+            {"credential", Cred} -> input_credential(Cred);
+            _ -> input_credential("")
+          end.
+      </erl>
     </p>
 
     <table>
