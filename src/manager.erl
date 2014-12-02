@@ -27,7 +27,7 @@ init() ->
     ),
     link_to_pid_list(Talliers),
 
-    % tell booths and talliers about each other
+    % tell registrar about all booths
     lists:foreach(
         fun(Booth) -> registrar:register_booth(Registrar, Booth) end,
         Booths),
