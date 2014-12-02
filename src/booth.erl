@@ -6,44 +6,48 @@ batchfreq() -> 5.
 init() ->
     spawn(fun() -> loop(sets:new(), [], [], [], batchfreq()) end).
 
-loop(Not_yet_voted, Unbatched_ballots, Batched_ballots, Voting_schemes, BatchFreq) ->
+loop(NotYetVoted, Unsent, Sent, Talliers, BatchFreq) ->
     receive
         % register a new voter at this location
         {registration, Pid, Credentials} ->
-            New_not_yet_voted = sets:add_element(Credentials, Not_yet_voted),
+            NewNotYetVoted = sets:add_element(Credentials, NotYetVoted),
             Pid ! {registered, Credentials, self()},
-            loop(New_not_yet_voted, Unbatched_ballots, Batched_ballots, Voting_schemes, BatchFreq);
+            loop(NewNotYetVoted, Unsent, Sent, Talliers, BatchFreq);
         % cast a vote
         {ballot, Pid, Credentials, Data} ->
-            Valid_registration = sets:is_element(Credentials, Not_yet_voted),
+            ValidRegistration = sets:is_element(Credentials, NotYetVoted),
             if
-                Valid_registration ->
+                ValidRegistration ->
                     Pid ! success,
-                    New_not_yet_voted = sets:del_element(Credentials, Not_yet_voted),
-                    New_unbatched_ballots = [Data | Unbatched_ballots],
+                    NewNotYetVoted = sets:del_element(Credentials, NotYetVoted),
+                    NewUnsent = [Data | Unsent],
                     if
-                        length(New_unbatched_ballots) >= BatchFreq ->
-                            Fun = fun({TallierPid,Batchfun}) -> TallierPid ! {batch, Batchfun(New_unbatched_ballots)} end,
-                            lists:map(Fun, Voting_schemes),
-                            loop(New_not_yet_voted, [], Batched_ballots ++ New_unbatched_ballots, Voting_schemes, BatchFreq);
+                        length(NewUnsent) >= BatchFreq ->
+                            Fun = fun({TallierPid,Batchfun}) -> 
+                                TallierPid ! {batch, Batchfun(NewUnsent)} 
+                            end,
+                            lists:foreach(Fun, Talliers),
+                            loop(NewNotYetVoted, [], 
+                                Sent ++ NewUnsent, Talliers, BatchFreq);
                         true -> % not time to batch
-                            loop(New_not_yet_voted, New_unbatched_ballots, Batched_ballots, Voting_schemes, BatchFreq)
+                            loop(NewNotYetVoted, NewUnsent, 
+                                Sent, Talliers, BatchFreq)
                     end;
                 true -> % invalid registration
                     Pid ! {failure, invalid_registration},
-                    loop(Not_yet_voted, Unbatched_ballots, Batched_ballots, Voting_schemes, BatchFreq)
+                    loop(NotYetVoted, Unsent, Sent, Talliers, BatchFreq)
             end;
         % add a new ballot tallying system
         {newScheme, Batchfun, Pid} ->
-            New_schemes = [{Pid, Batchfun} | Voting_schemes],
+            NewSchemes = [{Pid, Batchfun} | Talliers],
             % resend all unbatched ballots
-            Pid ! {batch, Batchfun(Batched_ballots)},
-            loop(Not_yet_voted, Unbatched_ballots, Batched_ballots, New_schemes, BatchFreq);
+            Pid ! {batch, Batchfun(Sent)},
+            loop(NotYetVoted, Unsent, Sent, NewSchemes, BatchFreq);
         % send all unbatched data
         flush ->
-            Fun = fun({Pid,Batchfun}) -> Pid ! {batch, Batchfun(Unbatched_ballots)} end,
-            lists:map(Fun, Voting_schemes),
-            loop(Not_yet_voted, [], Batched_ballots ++ Unbatched_ballots, Voting_schemes, BatchFreq);
+            Fun = fun({Pid,Batchfun}) -> Pid ! {batch, Batchfun(Unsent)} end,
+            lists:foreach(Fun, Talliers),
+            loop(NotYetVoted, [], Sent ++ Unsent, Talliers, BatchFreq);
         quit ->
             ok
     end.

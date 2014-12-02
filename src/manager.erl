@@ -28,11 +28,13 @@ init() ->
     link_to_pid_list(Talliers),
 
     % tell booths and talliers about each other
-    lists:map(fun(Booth) -> registrar:register_booth(Registrar, Booth) end, Booths),
-    lists:map(
+    lists:foreach(
+        fun(Booth) -> registrar:register_booth(Registrar, Booth) end,
+        Booths),
+    % Tells all booths about all talliers
+    lists:foreach(
         fun({Booth, Tallier}) -> Tallier ! {announce, Booth} end,
         [{X, Y} || X <- Booths, Y <- Talliers]),
-    Manager = spawn(fun() -> loop(Registrar, Booths, Talliers, WinnerCollector) end),
 
     % frontend
     FrontendData = #frontend_pids{
@@ -40,15 +42,17 @@ init() ->
         winner_collector_pid = WinnerCollector,
         manager_pid = Manager
     },
-    frontend_sup:start_link(FrontendData),
+    frontend_sup:start_link(FrontendData).
 
-    Manager.
+    spawn(fun() -> loop(Registrar, Booths, Talliers, WinnerCollector) end),
 
 loop(Registrar, Booths, Talliers, WinnerCollector) ->
     receive
         {newBooth, Booth} ->
             registrar:register_booth(Registrar, Booth),
-            lists:map(fun(Tallier) -> Tallier ! {announce, Booth} end, Talliers),
+            lists:foreach(
+                fun(Tallier) -> Tallier ! {announce, Booth} end, 
+                Talliers),
             loop(Registrar, Booths, Talliers, WinnerCollector);
         {newPointScheme, PointScheme, PointSchemeName} ->
             Tallier = tally:init(
