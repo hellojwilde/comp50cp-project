@@ -73,7 +73,10 @@ handle_info(Msg, State) ->
       #state{sock=Socket} = State,
       EventData = json2:encode({struct, [
         {"type", "winners"},
-        {"data", {struct, maps:to_list(Winners)}}
+        {"data", {struct, lists:map(
+          fun({Key, Value}) -> {Key, {array, Value}} end,
+          maps:to_list(Winners)
+        )}}
       ]}),
       case yaws_sse:send_events(Socket, yaws_sse:data(EventData)) of
         ok -> {noreply, State};
