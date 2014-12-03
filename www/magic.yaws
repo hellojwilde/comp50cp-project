@@ -29,13 +29,18 @@
       case postvar(A, "type") of
         {ok, "simulate"} ->
           simulate_votes(RegistrarPid, [
-            {"a", {vote, ["josh", "jonathan", "andrew", "anschel"], 1}},
-            {"b", {vote, ["josh", "jonathan", "andrew", "anschel"], 2}},
-            {"c", {vote, ["andrew", "jonathan", "josh", "anschel"], 3}},
-            {"d", {vote, ["anschel", "jonathan", "andrew", "josh"], 1}},
-            {"e", {vote, ["andrew", "jonathan", "anschel", "josh"], 2}},
-            {"f", {vote, ["anschel", "jonathan", "andrew", "josh"], 4}},
-            {"g", {vote, ["andrew", "jonathan", "anschel", "josh"], 2}}
+            {"a1", {vote, ["josh", "andrew", "jonathan", "anschel"], 3}},
+            {"a2", {vote, ["josh", "andrew", "jonathan", "anschel"], 3}},
+            {"a3", {vote, ["josh", "andrew", "jonathan", "anschel"], 3}},
+            {"a4", {vote, ["josh", "andrew", "jonathan", "anschel"], 3}},
+
+            {"b1", {vote, ["andrew", "jonathan", "anschel", "josh"], 2}},
+            {"b2", {vote, ["andrew", "jonathan", "anschel", "josh"], 2}},
+
+            {"c1", {vote, ["jonathan", "andrew", "anschel", "josh"], 1}},
+            {"c2", {vote, ["jonathan", "andrew", "anschel", "josh"], 1}},
+
+            {"d1", {vote, ["anschel", "andrew", "jonathan", "josh"], 3}}
           ]),
           {ehtml, {h2, [], ["Dumped in a bunch of votes."]}};
         {ok, "flush"} -> 
