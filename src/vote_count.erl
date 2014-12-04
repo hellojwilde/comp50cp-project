@@ -5,6 +5,6 @@ empty() -> 0.
 
 combine(A, B) -> A + B.
 
-winner(A) -> A.
+winner(A) -> [A].
 
 batch(L) -> length(L).
