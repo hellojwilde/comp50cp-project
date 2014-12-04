@@ -1,76 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Vote</title>
+    <title>Vote</title>
 </head>
 <body>
-  <h1>Vote</h1>
+    <h1>Vote</h1>
 
-  <form method="post" action="/vote_post.yaws">
-    <p>
-      <label for="booth">Booth (PID):</label>
-      <erl>
-        input_booth(BoothPid) -> 
-          {ehtml, 
-            {input, [{type, "text"}, {name, "booth"}, {value, BoothPid}]}}.
+    <form method="post" action="/vote_post.yaws">
+        <p>
+            <label for="booth">Booth (PID):</label>
+            <erl>
+                booth_input(BoothPid) -> 
+                    {input, [
+                        {type, "text"}, 
+                        {name, "booth"}, 
+                        {value, BoothPid}
+                    ]}.
 
-        out(A) ->
-          Query = yaws_api:parse_query(A),
-          case lists:keyfind("booth", 1, Query) of
-            {"booth", BoothPid} -> input_booth(BoothPid);
-            _ -> input_booth("")
-          end.
-      </erl>
-    </p>
+                out(A) ->
+                    Query = yaws_api:parse_query(A),
+                    {ehtml,
+                        case lists:keyfind("booth", 1, Query) of
+                            {"booth", BoothPid} -> booth_input(BoothPid);
+                            _ -> booth_input("")
+                        end}.
+            </erl>
+        </p>
 
-    <p>
-      <label for="credential">Credential:</label>
+        <p>
+            <label for="credential">Credential:</label>
 
-      <erl>
-        input_credential(Cred) -> 
-          {ehtml, 
-            {input, [{type, "text"}, {name, "credential"}, {value, Cred}]}}.
+            <erl>
+                cred_input(Cred) -> 
+                    {input, [
+                        {type, "text"}, 
+                        {name, "credential"}, 
+                        {value, Cred}
+                    ]}.
 
-        out(A) ->
-          Query = yaws_api:parse_query(A),
-          case lists:keyfind("credential", 1, Query) of
-            {"credential", Cred} -> input_credential(Cred);
-            _ -> input_credential("")
-          end.
-      </erl>
-    </p>
+                out(A) ->
+                    Query = yaws_api:parse_query(A),
 
-    <table>
-      <tr>
-        <td>Candidate</td>
-        <td>Approve</td>
-        <td>Rank</td>
-      </tr>
-      <tr>
-        <td>Anschel</td>
-        <td><input type="checkbox" name="approvals" value="anschel"/></td>
-        <td><input type="number" name="rank_anschel"/></td>
-      </tr>
-      <tr>
-        <td>Josh</td>
-        <td><input type="checkbox" name="approvals" value="josh"/></td>
-        <td><input type="number" name="rank_josh"/></td>
-      </tr>
-      <tr>
-        <td>Andrew</td>
-        <td><input type="checkbox" name="approvals" value="andrew"/></td>
-        <td><input type="number" name="rank_andrew"/></td>
-      </tr>
-      <tr>
-        <td>Jonathan</td>
-        <td><input type="checkbox" name="approvals" value="jonathan"/></td>
-        <td><input type="number" name="rank_jonathan"/></td>
-      </tr>
-    </table>
+                    {ehtml, 
+                        case lists:keyfind("credential", 1, Query) of
+                            {"credential", Cred} -> cred_input(Cred);
+                            _ -> cred_input("")
+                        end}.
+            </erl>
+        </p>
 
-    <p>
-      <input type="submit" value="Vote!"/>
-    </p>
-  </form>
+        <table>
+            <tr>
+                <td>Candidate</td>
+                <td>Approve</td>
+                <td>Rank</td>
+            </tr>
+
+            <erl>
+                candidate_row(Name) ->
+                    {tr, [], [
+                        {td, [], Name},
+                        {td, [], [
+                            {input, [
+                                {type, "checkbox"}, 
+                                {name, "approvals"}, 
+                                {value, Name}
+                            ]}
+                        ]},
+                        {td, [], [
+                            {input, [
+                                {type, "number"},
+                                {name, "rank_" ++ Name}
+                            ]}
+                        ]}
+                    ]}.
+
+                out(A) ->
+                    Candidates = frontend_config:get_candidates(A),
+                    {ehtml, lists:map(fun candidate_row/1, Candidates)}.
+            </erl>
+        </table>
+
+        <p>
+            <input type="submit" value="Vote!"/>
+        </p>
+    </form>
 </body>
 </html>

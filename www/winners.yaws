@@ -1,68 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <title>Winners</title>
+    <meta charset="utf-8"/>
+    <title>Winners</title>
 </head>
 <body>
-  <h1>Winners</h1>
-  <div id="winners"/>
+    <h1>Winners</h1>
+    <div id="winners"/>
 
-  <script src="/jquery-2.1.1.js"></script>
-  <script>
-    function Winners(el) {
-      this.el = $(el);
-      this.winners = {};
-    }
-
-    Winners.prototype.setWinners = function(winners) {
-      this.winners = winners;
-      this.render();
-    }
-
-    Winners.prototype.setResult = function(scheme, winner) {
-      this.winners[scheme] = winner;
-      this.render();
-    };
-
-    Winners.prototype.render = function() {
-      this.el.empty();
-
-      var table = $(
-        '<table>' +
-          '<tr><th>Voting Scheme</th><th>Winners</th>' +
-        '</table>'
-      ).appendTo(this.el);
-
-      for (var scheme in this.winners) {
-        if (!this.winners.hasOwnProperty(scheme)) {
-          continue;
+    <script src="/jquery-2.1.1.js"></script>
+    <script>
+        function Winners(el) {
+            this.el = $(el);
+            this.winners = {};
         }
 
-        $(
-          '<tr>' +
-            '<td>' + scheme + '</td>' +
-            '<td>' + JSON.stringify(this.winners[scheme]) + '</td>' +
-          '</tr>'
-        ).appendTo(table);
-      }
+        Winners.prototype.setWinners = function(winners) {
+            this.winners = winners;
+            this.render();
+        }
 
-      $('<p>Last updated: ' + new Date().toString() + '</p>').appendTo(this.el);
-    };
+        Winners.prototype.setResult = function(scheme, winner) {
+            this.winners[scheme] = winner;
+            this.render();
+        };
 
-    var winners = new Winners('#winners');
-    var source = new EventSource('/result_events');
-    source.onmessage = function(e) {
-      var message = JSON.parse(e.data);
-      switch(message.type) {
-        case 'winner':
-          winners.setResult(message.data.name, message.data.winners);
-          break;
-        case 'winners':
-          winners.setWinners(message.data);
-          break;
-      }
-    };
-  </script>
+        Winners.prototype.render = function() {
+            this.el.empty();
+
+            var table = $(
+                '<table>' +
+                    '<tr><th>Voting Scheme</th><th>Winners</th>' +
+                '</table>'
+            ).appendTo(this.el);
+
+            for (var scheme in this.winners) {
+                if (!this.winners.hasOwnProperty(scheme)) {
+                    continue;
+                }
+
+                $(
+                    '<tr>' +
+                        '<td>' + scheme + '</td>' +
+                        '<td>' + 
+                            JSON.stringify(this.winners[scheme]) + 
+                        '</td>' +
+                    '</tr>'
+                ).appendTo(table);
+            }
+
+            $(
+                '<p>Last updated: ' + new Date().toString() + '</p>'
+            ).appendTo(this.el);
+        };
+
+        var winners = new Winners('#winners');
+        var source = new EventSource('/result_events');
+        source.onmessage = function(e) {
+            var message = JSON.parse(e.data);
+            switch(message.type) {
+                case 'winner':
+                    winners.setResult(message.data.name, message.data.winners);
+                    break;
+                case 'winners':
+                    winners.setWinners(message.data);
+                    break;
+            }
+        };
+    </script>
 </body>
 </html>

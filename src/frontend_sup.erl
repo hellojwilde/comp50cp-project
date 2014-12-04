@@ -5,15 +5,15 @@
 -export([start_link/1, init/1]).
 
 start_link(VoteConfig) ->
-  supervisor:start_link({local, ?MODULE}, ?MODULE, VoteConfig).
+    supervisor:start_link({local, ?MODULE}, ?MODULE, VoteConfig).
 
 init(VoteConfig) ->
-  FrontendChildSpec = {
-    frontend, 
-    {frontend, start, [VoteConfig]},
-    permanent, 
-    2000,
-    worker,
-    [frontend]
-  },
-  {ok, {{one_for_all, 0, 1}, [FrontendChildSpec]}}.
+    FrontendChildSpec = {
+        frontend, 
+        {frontend, start, [VoteConfig]},
+        permanent, 
+        2000,
+        worker,
+        [frontend]
+    },
+    {ok, {{one_for_all, 0, 1}, [FrontendChildSpec]}}.

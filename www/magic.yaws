@@ -1,67 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Magic</title>
+    <title>Magic</title>
 </head>
 <body>
-  <h1>Magic</h1>
+    <h1>Magic</h1>
 
-  <erl>
-    simulate_votes(RegistrarPid, Votes) ->
-      lists:foreach(
-        fun ({Name, Ballot}) ->
-          RegistrarPid ! {register, self(), Name},
-          receive
-            {success, {Credential, BoothPid}, _RegistrarPid} ->
-              BoothPid ! {ballot, self(), Credential, Ballot},
-              receive
-                success -> ok;
-                {failure, invalid_registration} -> fail
-              end;
-            {failure, _, _} -> fail
-          after
-            200 -> timeout
-          end
-        end,
-        Votes
-      ).
-      
-    out(A) ->
-      ManagerPid = frontend_pids:get_manager_pid(A),
-      RegistrarPid = frontend_pids:get_registrar_pid(A),
+    <erl>
+        simulate_votes(RegistrarPid, Votes) ->
+            lists:foreach(
+                fun ({Name, Ballot}) ->
+                    RegistrarPid ! {register, self(), Name},
+                    receive
+                        {success, {Credential, BoothPid}, _RegistrarPid} ->
+                            BoothPid ! {ballot, self(), Credential, Ballot},
+                            receive
+                                success -> ok;
+                                {failure, invalid_registration} -> fail
+                            end;
+                        {failure, _, _} -> fail
+                    after
+                        200 -> timeout
+                    end
+                end,
+                Votes
+            ).
+            
+        out(A) ->
+            ManagerPid = frontend_config:get_manager_pid(A),
+            RegistrarPid = frontend_config:get_registrar_pid(A),
 
-      case postvar(A, "type") of
-        {ok, "simulate"} ->
-          simulate_votes(RegistrarPid, [
-            {"a1", {vote, ["josh", "andrew", "jonathan", "anschel"], 3}},
-            {"a2", {vote, ["josh", "andrew", "jonathan", "anschel"], 3}},
-            {"a3", {vote, ["josh", "andrew", "jonathan", "anschel"], 3}},
-            {"a4", {vote, ["josh", "andrew", "jonathan", "anschel"], 3}},
+            case postvar(A, "type") of
+                {ok, "simulate"} ->
+                    simulate_votes(RegistrarPid, [
+                        {"a1", {vote, ["Josh", "Andrew", "Jon", "Anschel"], 3}},
+                        {"a2", {vote, ["Josh", "Andrew", "Jon", "Anschel"], 3}},
+                        {"a3", {vote, ["Josh", "Andrew", "Jon", "Anschel"], 3}},
+                        {"a4", {vote, ["Josh", "Andrew", "Jon", "Anschel"], 3}},
 
-            {"b1", {vote, ["andrew", "jonathan", "anschel", "josh"], 2}},
-            {"b2", {vote, ["andrew", "jonathan", "anschel", "josh"], 2}},
+                        {"b1", {vote, ["Andrew", "Jon", "Anschel", "Josh"], 2}},
+                        {"b2", {vote, ["Andrew", "Jon", "Anschel", "Josh"], 2}},
 
-            {"c1", {vote, ["jonathan", "andrew", "anschel", "josh"], 1}},
-            {"c2", {vote, ["jonathan", "andrew", "anschel", "josh"], 1}},
+                        {"c1", {vote, ["Jon", "Andrew", "Anschel", "Josh"], 1}},
+                        {"c2", {vote, ["Jon", "Andrew", "Anschel", "Josh"], 1}},
 
-            {"d1", {vote, ["anschel", "andrew", "jonathan", "josh"], 3}}
-          ]),
-          {ehtml, {h2, [], ["Dumped in a bunch of votes."]}};
-        {ok, "flush"} -> 
-          ManagerPid ! flush,
-          {ehtml, {h2, [], ["All booths flushed of votes."]}};
-        _ -> ok
-      end.
-  </erl>
+                        {"d1", {vote, ["Anschel", "Andrew", "Jon", "Josh"], 3}},
+                        {"d2", {vote, ["Anschel", "Andrew", "Jon", "Josh"], 3}}
+                    ]),
+                    {ehtml, {h2, [], ["Dumped in a bunch of votes."]}};
+                {ok, "flush"} -> 
+                    ManagerPid ! flush,
+                    {ehtml, {h2, [], ["All booths flushed of votes."]}};
+                _ -> ok
+            end.
+    </erl>
 
-  <form method="post" action="/magic.yaws">
-    <input type="hidden" name="type" value="flush"/>
-    <input type="submit" value="Flush all votes!"/>
-  </form>
+    <form method="post" action="/magic.yaws">
+        <input type="hidden" name="type" value="flush"/>
+        <input type="submit" value="Flush all votes!"/>
+    </form>
 
-  <form method="post" action="/magic.yaws">
-    <input type="hidden" name="type" value="simulate"/>
-    <input type="submit" value="Simulate some votes!"/>
-  </form>
+    <form method="post" action="/magic.yaws">
+        <input type="hidden" name="type" value="simulate"/>
+        <input type="submit" value="Simulate some votes!"/>
+    </form>
 </body>
 </html>

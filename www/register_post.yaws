@@ -1,41 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Registration Result</title>
+    <title>Registration Result</title>
 </head>
 <body>
-  <h1>Registration Result</h1>
-  <erl>
-    send_registration(RegistrarPid, Name) ->
-      RegistrarPid ! {register, self(), Name},
-      receive
-        {success, {Cred, BoothPid}, _RegistrarPid} ->
-          BoothPidList = pid_to_list(BoothPid),
-          VoteHref =
-            "/vote.yaws?booth=" ++ http_uri:encode(BoothPidList) ++ 
-            "&credential=" ++ http_uri:encode(Cred),
-          {ehtml, {h2, [], [
-            "Success: go vote at booth ", 
-            {a, [{href, VoteHref}], [
-              BoothPidList, " with credential ", Cred]
-            }
-          ]}};
-        {failure, registered, _RegistrarPid} ->
-          {ehtml, {h2, [], ["You're already registered."]}};
-        {failure, no_booths, _RegistrarPid} ->
-          {ehtml, {h2, [], ["There aren't any voting booths set up yet."]}}
-      after
-        2000 ->
-          {ehtml, {h2, [], ["Timeout during registration."]}}
-      end.
+    <h1>Registration Result</h1>
+    <erl>
+        send_registration(RegistrarPid, Name) ->
+            RegistrarPid ! {register, self(), Name},
+            receive
+                {success, {Cred, BoothPid}, _RegistrarPid} ->
+                    BoothPidList = pid_to_list(BoothPid),
+                    VoteHref =
+                        "/vote.yaws?booth=" ++ http_uri:encode(BoothPidList) ++ 
+                        "&credential=" ++ http_uri:encode(Cred),
+                    {ehtml, {h2, [], [
+                        "Success: go vote at booth ", 
+                        {a, [{href, VoteHref}], [
+                            BoothPidList, " with credential ", Cred
+                        ]}
+                    ]}};
+                {failure, registered, _RegistrarPid} ->
+                    {ehtml, {h2, [], ["You're already registered."]}};
+                {failure, no_booths, _RegistrarPid} ->
+                    {ehtml, {h2, [], ["There aren't any voting booths yet."]}}
+            after
+                2000 ->
+                    {ehtml, {h2, [], ["Timeout during registration."]}}
+            end.
 
-    out(A) ->
-      case {postvar(A, "registrar"), postvar(A, "name")} of
-        {{ok, RegistrarVal}, {ok, NameVal}} -> 
-          send_registration(list_to_pid(RegistrarVal), NameVal);
-        _ ->
-          {ehtml, {h2, [], ["Invalid registrar and/or name."]}}
-      end.
-  </erl>
+        out(A) ->
+            case {postvar(A, "registrar"), postvar(A, "name")} of
+                {{ok, RegistrarVal}, {ok, NameVal}} -> 
+                    send_registration(list_to_pid(RegistrarVal), NameVal);
+                _ ->
+                    {ehtml, {h2, [], ["Invalid registrar and/or name."]}}
+            end.
+    </erl>
 </body>
 </html>

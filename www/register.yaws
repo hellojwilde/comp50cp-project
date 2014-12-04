@@ -1,30 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Register</title>
+    <title>Register</title>
 </head>
 <body>
-  <h1>Register</h1>
-  <form method="post" action="/register_post.yaws">
-    <p>
-      <label for="registrar">Registrar (PID):</label>
-      <erl>
-        out(A) ->
-          {ehtml,
-            {input, [
-              {type, "text"}, 
-              {name, "registrar"}, 
-              {value, pid_to_list(frontend_pids:get_registrar_pid(A))}
-            ]}}.
-      </erl>
-    </p>
-    <p>
-      <label for="name">Name:</label>
-      <input type="text" name="name"/>
-    </p>
-    <p>
-      <input type="submit" name="Register" />
-    </p>
-  </form>
+    <h1>Register</h1>
+    <form method="post" action="/register_post.yaws">
+        <p>
+            <label for="registrar">Registrar (PID):</label>
+            <erl>
+                out(A) ->
+                    {ehtml,
+                        {input, [
+                            {type, "text"}, 
+                            {name, "registrar"}, 
+                            {value, pid_to_list(
+                                frontend_config:get_registrar_pid(A)
+                            )}
+                        ]}
+                    }.
+            </erl>
+        </p>
+        <p>
+            <label for="name">Name:</label>
+            <input type="text" name="name"/>
+        </p>
+        <p>
+            <input type="submit" name="Register" />
+        </p>
+    </form>
 </body>
 </html>

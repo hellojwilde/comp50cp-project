@@ -38,7 +38,7 @@ out(A) ->
 
 init([Arg]) ->
   process_flag(trap_exit, true),
-  WinnerCollector = Arg#arg.opaque#frontend_pids.winner_collector_pid,
+  WinnerCollector = Arg#arg.opaque#frontend_config.winner_collector_pid,
   {ok, #state{sock=Arg#arg.clisock, winner_collector_pid=WinnerCollector}}.
 
 handle_call(_Request, _From, State) ->

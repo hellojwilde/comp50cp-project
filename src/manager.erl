@@ -39,10 +39,11 @@ init() ->
     Manager = spawn(fun() -> loop(Registrar, Booths, Talliers, WinnerCollector) end),
 
     % frontend
-    FrontendData = #frontend_pids{
+    FrontendData = #frontend_config{
         registrar_pid = Registrar, 
         winner_collector_pid = WinnerCollector,
-        manager_pid = Manager
+        manager_pid = Manager,
+        candidates = candidates()
     },
     frontend_sup:start_link(FrontendData),
 
@@ -85,5 +86,13 @@ schemes() ->
         {"Borda Count", point_scheme:borda_count()}, 
         {"Nauru", point_scheme:nauru()}, 
         {"Schultze", schultze}
+    ].
+
+candidates() ->
+    [
+        "Anschel",
+        "Josh",
+        "Andrew",
+        "Jon"
     ].
 

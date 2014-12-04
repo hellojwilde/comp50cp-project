@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Index</title>
+    <title>Index</title>
 </head>
 <body>
-  <h1>Index</h1>
+    <h1>Index</h1>
 
-  <h2>Normal voting</h2>
-  <ul>
-    <li><a href="/register.yaws">Register</a></li>
-    <li><a href="/vote.yaws">Vote</a></li>
-    <li><a href="/winners.yaws">Winners</a></li>
-  </ul>
+    <h2>Normal voting</h2>
+    <ul>
+        <li><a href="/register.yaws">Register</a></li>
+        <li><a href="/vote.yaws">Vote</a></li>
+        <li><a href="/winners.yaws">Winners</a></li>
+    </ul>
 
-  <h2>Rig the election!</h2>
-  <ul>
-    <li><a href="/magic.yaws">Magic</a></li>
-  </ul>
+    <h2>Rig the election!</h2>
+    <ul>
+        <li><a href="/magic.yaws">Magic</a></li>
+    </ul>
 </body>
 </html>
