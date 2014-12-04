@@ -23,9 +23,7 @@
         {failure, registered, _RegistrarPid} ->
           {ehtml, {h2, [], ["You're already registered."]}};
         {failure, no_booths, _RegistrarPid} ->
-          {ehtml, {h2, [], ["There aren't any voting booths set up yet."]}};
-        _ ->
-          {ehtml, {h2, [], ["There was an unknown registration error."]}}
+          {ehtml, {h2, [], ["There aren't any voting booths set up yet."]}}
       after
         2000 ->
           {ehtml, {h2, [], ["Timeout during registration."]}}

@@ -16,9 +16,9 @@
               BoothPid ! {ballot, self(), Credential, Ballot},
               receive
                 success -> ok;
-                _ -> fail
+                {failure, invalid_registration} -> fail
               end;
-            _ -> fail
+            {failure, _, _} -> fail
           after
             200 -> timeout
           end
