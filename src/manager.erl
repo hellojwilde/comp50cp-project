@@ -78,6 +78,8 @@ link_to_pid_list(Xs) ->
 
 schemes() ->
     [
+%        {"Vote Count", vote_count},
+%        {"All Votes", all_votes},
         {"Plurality", point_scheme:plurality()}, 
         {"Approval", point_scheme:approval()}, 
         {"Borda Count", point_scheme:borda_count()}, 
