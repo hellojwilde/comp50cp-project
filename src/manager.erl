@@ -36,15 +36,17 @@ init() ->
         fun({Booth, Tallier}) -> Tallier ! {announce, Booth} end,
         [{X, Y} || X <- Booths, Y <- Talliers]),
 
+    Manager = spawn(fun() -> loop(Registrar, Booths, Talliers, WinnerCollector) end),
+
     % frontend
     FrontendData = #frontend_pids{
         registrar_pid = Registrar, 
         winner_collector_pid = WinnerCollector,
         manager_pid = Manager
     },
-    frontend_sup:start_link(FrontendData).
+    frontend_sup:start_link(FrontendData),
 
-    spawn(fun() -> loop(Registrar, Booths, Talliers, WinnerCollector) end),
+    Manager.    
 
 loop(Registrar, Booths, Talliers, WinnerCollector) ->
     receive
