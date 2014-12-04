@@ -13,7 +13,11 @@
           RegistrarPid ! {register, self(), Name},
           receive
             {success, {Credential, BoothPid}, _RegistrarPid} ->
-              BoothPid ! {ballot, self(), Credential, Ballot};
+              BoothPid ! {ballot, self(), Credential, Ballot},
+              receive
+                success -> ok;
+                _ -> fail
+              end;
             _ -> fail
           after
             200 -> timeout
