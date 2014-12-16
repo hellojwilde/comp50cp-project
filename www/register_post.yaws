@@ -37,5 +37,7 @@
                     {ehtml, {h2, [], ["Invalid registrar and/or name."]}}
             end.
     </erl>
+
+    <p><a href="/index.yaws">Main Menu</a></p>
 </body>
 </html>

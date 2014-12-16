@@ -85,5 +85,7 @@
             <input type="submit" value="Vote!"/>
         </p>
     </form>
+
+    <p><a href="/index.yaws">Main Menu</a></p>
 </body>
 </html>

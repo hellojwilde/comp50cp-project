@@ -95,5 +95,7 @@
                         "Invalid booth ID, credential, or ballot format."
                 end}}.
     </erl>
+
+    <p><a href="/index.yaws">Main Menu</a></p>
 </body>
 </html>

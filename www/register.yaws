@@ -29,5 +29,7 @@
             <input type="submit" name="Register" />
         </p>
     </form>
+
+    <p><a href="/index.yaws">Main Menu</a></p>
 </body>
 </html>

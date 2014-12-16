@@ -64,5 +64,7 @@
         <input type="hidden" name="type" value="simulate"/>
         <input type="submit" value="Simulate some votes!"/>
     </form>
+
+    <p><a href="/index.yaws">Main Menu</a></p>
 </body>
 </html>

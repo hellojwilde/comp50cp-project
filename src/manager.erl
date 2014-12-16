@@ -65,17 +65,22 @@ loop(Registrar, Booths, Talliers, WinnerCollector) ->
                     WinnerCollector
                 )
             ),
-            lists:map(fun(Booth) -> Tallier ! {announce, Booth} end, Booths),
-            loop(Registrar, Booths, Talliers, WinnerCollector);
+            lists:foreach(
+                fun(Booth) -> Tallier ! {announce, Booth} end,
+                Booths),
+            loop(Registrar, Booths, [Tallier | Talliers], WinnerCollector);
         flush ->
-            lists:map(fun(Booth) -> Booth ! flush end, Booths),
+            lists:foreach(fun(Booth) -> Booth ! flush end, Booths),
             loop(Registrar, Booths, Talliers, WinnerCollector);
         quit ->
+            registrar:stop(Registrar),
+            lists:foreach(fun(Booth) -> Booth ! quit end, Booths),
+            lists:foreach(fun(Tallier) -> Tallier ! stop end, Talliers),
             ok
     end.
 
 link_to_pid_list(Xs) ->
-    lists:map(fun(X) -> link(X) end, Xs).
+    lists:foreach(fun(X) -> link(X) end, Xs).
 
 schemes() ->
     [
